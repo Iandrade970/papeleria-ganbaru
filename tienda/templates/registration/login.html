@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Iniciar sesión · Papelería Ganbaru{% endblock %}
+{% block content %}
+  <h1 class="h1">Iniciar sesión</h1>
+  <form method="post" class="card form" autocomplete="off">
+    {% csrf_token %}
+    {% if form.errors %}<p class="err">Usuario o contraseña incorrectos.</p>{% endif %}
+    <label class="form-row">
+      <span>Usuario</span>
+      {{ form.username }}
+    </label>
+    <label class="form-row">
+      <span>Contraseña</span>
+      {{ form.password }}
+    </label>
+    <div class="form-actions">
+      <a href="{% url 'tienda:registro' %}" class="btn btn-ghost">Crear cuenta</a>
+      <button type="submit" class="btn btn-primary">Entrar</button>
+    </div>
+  </form>
+{% endblock %}

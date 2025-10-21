@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Tu carrito · Papelería Ganbaru{% endblock %}
+
+{% block content %}
+<section class="wrap cart-wrap">
+  <h1 class="section-title"> Tu Carrito</h1>
+
+  {% if items %}
+  <div class="cart card pop">
+    <div class="cart-head">
+      <div>Producto</div>
+      <div>Precio</div>
+      <div>Cantidad</div>
+      <div>Subtotal</div>
+      <div></div>
+    </div>
+
+    {% for it in items %}
+    <div class="cart-row">
+      <div class="prod">
+       {% if it.producto.imagen %}
+         <img src="{{ it.producto.imagen.url }}" alt="{{ it.producto.nombre }}" class="thumb-cart">
+       {% endif %}
+         <span class="prod-nombre">{{ it.producto.nombre }}</span>
+       {% if it.producto.categoria %}<div class="badge">{{ it.producto.categoria.nombre }}</div>{% endif %}
+     </div>
+
+      <div class="precio">${{ it.precio_unitario }}</div>
+
+      <div class="qty">
+        <form method="post" action="{% url 'tienda:carrito_set' it.producto.id %}">
+          {% csrf_token %}
+          <input class="qty-input" type="number" name="qty" value="{{ it.cantidad }}" min="1">
+          <button type="submit" class="btn btn-secondary btn-pill">Actualizar</button>
+        </form>
+      </div>
+
+      <div class="subtotal">${{ it.subtotal }}</div>
+
+      <div class="acciones">
+        <a href="{% url 'tienda:carrito_eliminar' it.producto.id %}" class="btn btn-danger btn-pill">Eliminar</a>
+      </div>
+    </div>
+    {% endfor %}
+
+    <div class="cart-total">
+      <div class="total-label">Total:</div>
+      <div class="total-monto">${{ total }}</div>
+    </div>
+
+    <div class="cart-actions">
+      <a href="{% url 'tienda:inicio' %}" class="btn btn-outline btn-pill">← Seguir comprando</a>
+      <a href="{% url 'tienda:checkout' %}" class="btn btn-accent btn-pill">Ir a pagar 💳</a>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="cart-empty card pop">
+    <p>Tu carrito está vacío </p>
+    <a href="{% url 'tienda:inicio' %}" class="btn btn-primary btn-pill">Ir al catálogo</a>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

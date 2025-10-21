@@ -1,0 +1,59 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}Papelería Ganbaru{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="{% static 'tienda/css/styles.css' %}" rel="stylesheet">
+</head>
+<body class="bg">
+  <header class="site-header glass">
+    <div class="wrap header-inner">
+      <a class="brand" href="{% url 'tienda:inicio' %}">
+        <img src="{% static 'tienda/img/ganbaru.jpg' %}" alt="Papelería Ganbaru" class="logo">
+        <span class="brand-main">GANBARU</span>
+        <span class="brand-sub">útiles • oficina • escuela</span>
+      </a>
+
+      <nav class="main-nav">
+        <a href="{% url 'tienda:carrito_ver' %}" class="btn btn-pill btn-secondary"> Carrito</a>
+
+        {% if user.is_authenticated %}
+          <a href="{% url 'tienda:perfil' %}" class="btn btn-pill btn-outline">👤 Mi perfil</a>
+          <form action="{% url 'tienda:logout' %}" method="post" class="inline-form">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-pill btn-danger">Salir</button>
+          </form>
+        {% else %}
+          <a href="{% url 'tienda:login' %}" class="btn btn-pill btn-outline">Iniciar sesión</a>
+          <a href="{% url 'tienda:registro' %}" class="btn btn-pill btn-primary">Registrarse</a>
+        {% endif %}
+
+        <a href="/admin/" class="btn btn-pill btn-ghost">Admin</a>
+      </nav>
+    </div>
+  </header>
+
+  {% if messages %}
+  <div class="wrap">
+    <ul class="flash">
+      {% for message in messages %}
+        <li class="flash-item">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <main class="wrap">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer glass">
+    <div class="wrap footer-inner">
+      <p>© {{ now|date:"Y" }} Papelería Ganbaru</p>
+      <p class="fine">Santiago de Chile</p>
+    </div>
+  </footer>
+</body>
+</html>

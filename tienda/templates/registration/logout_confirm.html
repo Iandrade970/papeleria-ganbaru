@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Cerrar sesión · Papelería Ganbaru{% endblock %}
+{% block content %}
+  <h1 class="h1">¿Cerrar sesión?</h1>
+  <form method="post" class="form">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-accent">Sí, cerrar sesión</button>
+    <a href="{% url 'tienda:inicio' %}" class="btn btn-ghost">Cancelar</a>
+  </form>
+{% endblock %}

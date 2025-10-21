@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Inicio · Papelería Ganbaru{% endblock %}
+{% block content %}
+  <section class="hero card pop">
+    <div class="hero-copy">
+      <h1 class="h1">Todo Para Ti</h1>
+      <p class="lead">Flyers, Tarjetas de Presentación, Recuerdos de Bautizos, Agendas, Álbunes y Mucho Más.</p>
+      <div class="hero-cta">
+        <a href="{% url 'tienda:carrito_ver' %}" class="btn btn-lg btn-primary btn-pill">Ver carrito</a>
+        <a href="#catalogo" class="btn btn-lg btn-outline btn-pill">Ver catálogo</a>
+      </div>
+    </div>
+    <div class="hero-badge">Ganbaru ♥</div>
+  </section>
+
+  <h2 id="catalogo" class="section-title">Catálogo</h2>
+
+  <div class="cat-pills">
+  <a class="pill {% if not cat_seleccionada %}active{% endif %}" href="?">Todas</a>
+  {% for c in categorias %}
+    <a class="pill {% if cat_seleccionada == c.slug %}active{% endif %}" href="?cat={{ c.slug }}">{{ c.nombre }}</a>
+  {% endfor %}
+</div>
+
+<!-- FILTROS DEL CATÁLOGO -->
+<form class="filter-bar card pop" method="get">
+  <div class="row">
+    <div class="f-col">
+      <label>Buscar</label>
+      <input type="text" name="q" value="{{ f.q }}" placeholder="nombre o descripción…">
+    </div>
+
+    <div class="f-col">
+      <label>Categoría</label>
+      <select name="cat">
+        <option value="">Todas</option>
+        {% for c in categorias %}
+          <option value="{{ c.slug }}" {% if cat_seleccionada == c.slug %}selected{% endif %}>{{ c.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="f-col">
+      <label>Precio</label>
+      <div class="price-row">
+        <input type="text" name="pmin" inputmode="decimal" placeholder="mín" value="{{ f.pmin }}">
+        <span class="sep">–</span>
+        <input type="text" name="pmax" inputmode="decimal" placeholder="máx" value="{{ f.pmax }}">
+      </div>
+    </div>
+
+    <div class="f-col">
+      <label>Orden</label>
+      <select name="ord">
+        <option value="recientes"   {% if f.ord == 'recientes' %}selected{% endif %}>Más recientes</option>
+        <option value="precio_asc"  {% if f.ord == 'precio_asc' %}selected{% endif %}>Precio: menor a mayor</option>
+        <option value="precio_desc" {% if f.ord == 'precio_desc' %}selected{% endif %}>Precio: mayor a menor</option>
+        <option value="nombre_asc"  {% if f.ord == 'nombre_asc' %}selected{% endif %}>Nombre A–Z</option>
+        <option value="nombre_desc" {% if f.ord == 'nombre_desc' %}selected{% endif %}>Nombre Z–A</option>
+      </select>
+    </div>
+
+    <div class="f-col check">
+      <label class="ck">
+        <input type="checkbox" name="ok" value="1" {% if f.ok %}checked{% endif %}>
+        <span>Solo disponibles</span>
+      </label>
+    </div>
+
+    <div class="f-col actions">
+      <button class="btn btn-primary btn-pill" type="submit">Filtrar</button>
+      <a class="btn btn-outline btn-pill" href="?">Limpiar</a>
+    </div>
+  </div>
+</form>
+
+
+  {% if productos %}
+    <section class="product-grid">
+      {% for p in productos %}
+        <article class="card product pop">
+          <div class="product-head">
+            {% if p.imagen %}
+                <div class="product-img">
+                <img src="{{ p.imagen.url }}" alt="{{ p.nombre }}">
+              </div>
+             {% else %}
+                <div class="product-img placeholder">Sin imagen</div>
+             {% endif %}
+            <h3 class="product-title">{{ p.nombre }}</h3>
+            {% if p.disponible %}
+              <span class="pill pill-ok">Disponible</span>
+            {% else %}
+              <span class="pill pill-agotado">Agotado</span>
+            {% endif %}
+          </div>
+
+          <p class="product-desc">{{ p.descripcion|default:"—" }}</p>
+
+          <div class="product-buy">
+            <span class="price">$ {{ p.precio }}</span>
+            <form action="{% url 'tienda:carrito_agregar' p.id %}" method="post" class="add-form">
+              {% csrf_token %}
+              <input type="number" name="qty" value="1" min="1" class="qty">
+              <button type="submit" class="btn btn-accent btn-pill">Agregar</button>
+            </form>
+          </div>
+        </article>
+      {% endfor %}
+    </section>
+  {% else %}
+    <p>No hay productos aún. Entra al <a href="/admin/">admin</a> y agrega algunos.</p>
+  {% endif %}
+{% endblock %}

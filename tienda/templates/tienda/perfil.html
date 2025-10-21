@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Mi perfil · Papelería Ganbaru{% endblock %}
+{% block content %}
+  <h1 class="h1">Mis pedidos</h1>
+
+  {% if pedidos %}
+    <div class="orders">
+      {% for p in pedidos %}
+        <article class="card order">
+          <header class="order-head">
+            <h3>Pedido #{{ p.id }}</h3>
+            <span class="pill">{{ p.get_estado_display }}</span>
+          </header>
+          <ul class="order-lines">
+            {% for d in p.detalles.all %}
+              <li>
+                <span>{{ d.cantidad }} × {{ d.producto.nombre }}</span>
+                <strong>$ {{ d.subtotal }}</strong>
+              </li>
+            {% endfor %}
+          </ul>
+          <footer class="order-foot">
+            <span class="muted">{{ p.creado|date:"d/m/Y H:i" }}</span>
+            <strong>Total: $ {{ p.total }}</strong>
+          </footer>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>No has realizado pedidos aún.</p>
+  {% endif %}
+{% endblock %}

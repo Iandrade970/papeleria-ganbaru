@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Checkout · Papelería Ganbaru{% endblock %}
+{% block content %}
+  <h1 class="h1">Confirmar pedido</h1>
+
+  {% if items %}
+    <ul class="list">
+      {% for it in items %}
+        <li class="list-item">
+          <span>{{ it.cantidad }} × {{ it.producto.nombre }}</span>
+          <strong>$ {{ it.subtotal }}</strong>
+        </li>
+      {% endfor %}
+      <li class="list-item list-total">
+        <span>Total</span><strong>$ {{ total }}</strong>
+      </li>
+    </ul>
+
+    <form method="post" class="card form">
+      {% csrf_token %}
+      <input type="hidden" name="token" value="{{ token }}">
+      <label class="form-row">
+        <span>Cupón (opcional)</span>
+        <input name="cupon" class="input" placeholder="GANBARU10">
+      </label>
+      <div class="form-actions">
+        <a href="{% url 'tienda:carrito_ver' %}" class="btn btn-ghost">Volver al carrito</a>
+        <button type="submit" class="btn btn-accent">Confirmar pedido</button>
+      </div>
+    </form>
+  {% else %}
+    <p>No hay ítems.</p>
+  {% endif %}
+{% endblock %}
