@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Pedido #{{ pedido.id }}{% endblock %}
+{% block content %}
+<section class="card">
+  <h1 class="h1">Pedido #{{ pedido.id }}</h1>
+  <p class="lead">Cliente: {{ pedido.usuario }} · Estado: {{ pedido.estado }}</p>
+
+  <h3 class="section-title">Líneas</h3>
+  <div class="cart">
+    <div class="cart-head">
+      <div>Producto</div><div>Cant.</div><div>Precio</div><div>Subtotal</div><div></div>
+    </div>
+    {% for d in pedido.detalles.all %}
+      <div class="cart-row">
+        <div class="prod-nombre">{{ d.producto.nombre }}</div>
+        <div>{{ d.cantidad }}</div>
+        <div>${{ d.precio_unitario }}</div>
+        <div>${{ d.subtotal }}</div>
+        <div></div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="cart-total">
+    <span>Total:</span> <span class="total-monto">${{ pedido.total }}</span>
+  </div>
+
+  <h3 class="section-title">Actualizar estado</h3>
+  <form method="post" class="product-grid">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-primary btn-pill">Guardar</button>
+    <a href="{% url 'tienda:panel_pedidos' %}" class="btn btn-outline btn-pill">Volver</a>
+  </form>
+</section>
+{% endblock %}

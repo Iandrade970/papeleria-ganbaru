@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Panel · Ganbaru{% endblock %}
+{% block content %}
+<section class="card">
+  <h1 class="h1">Panel de Gestión</h1>
+  <p class="lead">Resumen del negocio</p>
+  <div class="product-grid">
+    <article class="card pop"><h3>Productos</h3><p>Total: {{ total_prod }}</p>
+      <a class="btn btn-primary btn-pill" href="{% url 'tienda:panel_productos' %}">Gestionar</a>
+    </article>
+    <article class="card pop"><h3>Pedidos</h3><p>Total: {{ total_ped }} · Pendientes: {{ pendientes }}</p>
+      <a class="btn btn-primary btn-pill" href="{% url 'tienda:panel_pedidos' %}">Ver pedidos</a>
+    </article>
+  </div>
+</section>
+{% endblock %}

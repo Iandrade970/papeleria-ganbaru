@@ -21,4 +21,17 @@ urlpatterns = [
     # Checkout
     path('checkout/', views.checkout, name='checkout'),
     path('pedido-exito/<int:pedido_id>/', views.pedido_exito, name='pedido_exito'),
+    
+    # ===== PANEL (solo staff) =====
+    path('panel/', views.panel_home, name='panel_home'),
+
+    # Productos (CRUD)
+    path('panel/productos/', views.panel_productos, name='panel_productos'),
+    path('panel/productos/nuevo/', views.panel_producto_nuevo, name='panel_producto_nuevo'),
+    path('panel/productos/<int:pk>/editar/', views.panel_producto_editar, name='panel_producto_editar'),
+    path('panel/productos/<int:pk>/eliminar/', views.panel_producto_eliminar, name='panel_producto_eliminar'),
+
+    # Pedidos
+    path('panel/pedidos/', views.panel_pedidos, name='panel_pedidos'),
+    path('panel/pedidos/<int:pk>/', views.panel_pedido_detalle, name='panel_pedido_detalle'),
 ]

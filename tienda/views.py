@@ -1,20 +1,20 @@
 # tienda/views.py
+import secrets
+from decimal import Decimal, InvalidOperation
+
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
+from django.contrib.admin.views.decorators import staff_member_required
+from django.db import transaction
+from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-from django.db import transaction
-import secrets
-from decimal import Decimal, InvalidOperation
-from django.db.models import Q
-from .models import Producto, Categoria
 
-from .models import Producto, Pedido, DetallePedido, Descuento
-from .forms import RegistroForm
 from .cart import Cart
-from .models import Producto, Categoria
+from .forms import RegistroForm, ProductoForm, PedidoEstadoForm
+from .models import Producto, Categoria, Pedido, DetallePedido, Descuento
 
 
 # --------- HOME / CATÁLOGO ----------
@@ -22,7 +22,7 @@ def inicio(request):
     qs = Producto.objects.all()
     categorias = Categoria.objects.all()
 
-    # --- leer parámetros GET ---
+    # GET params
     q        = request.GET.get("q", "").strip()
     cat_slug = request.GET.get("cat", "").strip()
     solo_ok  = request.GET.get("ok") == "1"
@@ -30,27 +30,33 @@ def inicio(request):
     pmax     = request.GET.get("pmax", "").strip()
     ordenar  = request.GET.get("ord", "recientes")
 
-    # --- aplicar filtros ---
     if q:
         qs = qs.filter(Q(nombre__icontains=q) | Q(descripcion__icontains=q))
+
+    # ⚠️ IMPORTANTE: si tu FK en Producto se llama 'Categoria' (con C mayúscula),
+    # el filtro correcto es 'Categoria__slug', no 'categoria__slug'.
+    # Si tu FK se llama 'categoria' (minúscula), deja 'categoria__slug'.
     if cat_slug:
-        qs = qs.filter(categoria__slug=cat_slug)
+        try:
+            qs = qs.filter(categoria__slug=cat_slug)  # usa Categoria__slug si tu campo es 'Categoria'
+        except Exception:
+            qs = qs.filter(Categoria__slug=cat_slug)
+
     if solo_ok:
         qs = qs.filter(disponible=True)
 
-    # rango de precios
     def as_decimal(v):
         try:
             return Decimal(v.replace(",", ".")) if v else None
         except (InvalidOperation, AttributeError):
             return None
+
     dmin, dmax = as_decimal(pmin), as_decimal(pmax)
     if dmin is not None:
         qs = qs.filter(precio__gte=dmin)
     if dmax is not None:
         qs = qs.filter(precio__lte=dmax)
 
-    # ordenar
     orden_map = {
         "recientes": "-creado",
         "precio_asc": "precio",
@@ -60,7 +66,6 @@ def inicio(request):
     }
     qs = qs.order_by(orden_map.get(ordenar, "-creado"))
 
-    # --- enviar todo al template ---
     ctx = {
         "productos": qs,
         "categorias": categorias,
@@ -68,7 +73,6 @@ def inicio(request):
         "f": {"q": q, "ok": solo_ok, "pmin": pmin, "pmax": pmax, "ord": ordenar},
     }
     return render(request, "tienda/index.html", ctx)
-
 
 
 # --------- AUTH ----------
@@ -125,7 +129,7 @@ def carrito_eliminar(request, producto_id):
     return redirect("tienda:carrito_ver")
 
 
-# --------- CHECKOUT con stock y anti-doble envío ----------
+# --------- CHECKOUT ----------
 @login_required
 def checkout(request):
     cart = Cart(request)
@@ -134,13 +138,11 @@ def checkout(request):
         messages.info(request, "Tu carrito está vacío.")
         return redirect("tienda:carrito_ver")
 
-    # GET: muestra resumen y crea token anti-doble envío
     if request.method == "GET":
         token = secrets.token_urlsafe(8)
         request.session["checkout_token"] = token
         return render(request, "tienda/checkout.html", {"items": items, "total": cart.total(), "token": token})
 
-    # POST: valida token
     posted = request.POST.get("token")
     saved = request.session.get("checkout_token")
     if not posted or posted != saved:
@@ -152,11 +154,8 @@ def checkout(request):
     cupon = Descuento.objects.filter(codigo=codigo_desc, activo=True).first() if codigo_desc else None
 
     with transaction.atomic():
-        # Bloquea productos y verifica stock
         ids = [it["producto"].id for it in items]
-        productos_bloqueados = (
-            Producto.objects.select_for_update().filter(id__in=ids).in_bulk()
-        )  # dict {id: Producto}
+        productos_bloqueados = Producto.objects.select_for_update().filter(id__in=ids).in_bulk()
 
         for it in items:
             p = productos_bloqueados[it["producto"].id]
@@ -164,7 +163,6 @@ def checkout(request):
                 messages.error(request, f"No hay stock suficiente de '{p.nombre}'. Disponible: {p.stock}.")
                 return redirect("tienda:carrito_ver")
 
-        # Crea pedido + detalles y descuenta stock
         pedido = Pedido.objects.create(usuario=request.user, descuento=cupon, estado="PENDIENTE")
 
         for it in items:
@@ -192,3 +190,77 @@ def checkout(request):
 def pedido_exito(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id)
     return render(request, "tienda/pedido_exito.html", {"pedido": pedido})
+
+
+# =======================
+# ===== PANEL STAFF =====
+# =======================
+
+@staff_member_required
+def panel_home(request):
+    total_prod = Producto.objects.count()
+    total_ped = Pedido.objects.count()
+    pendientes = Pedido.objects.filter(estado="PENDIENTE").count()
+    return render(request, "tienda/panel/home.html", {
+        "total_prod": total_prod, "total_ped": total_ped, "pendientes": pendientes,
+    })
+
+@staff_member_required
+def panel_productos(request):
+    q = request.GET.get("q", "").strip()
+    productos = Producto.objects.all().order_by("-creado")
+    if q:
+        productos = productos.filter(nombre__icontains=q)
+    return render(request, "tienda/panel/productos_list.html", {"productos": productos, "q": q})
+
+@staff_member_required
+def panel_producto_nuevo(request):
+    if request.method == "POST":
+        form = ProductoForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Producto creado.")
+            return redirect("tienda:panel_productos")
+    else:
+        form = ProductoForm()
+    return render(request, "tienda/panel/producto_form.html", {"form": form, "titulo": "Nuevo producto"})
+
+@staff_member_required
+def panel_producto_editar(request, pk):
+    p = get_object_or_404(Producto, pk=pk)
+    if request.method == "POST":
+        form = ProductoForm(request.POST, request.FILES, instance=p)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Producto actualizado.")
+            return redirect("tienda:panel_productos")
+    else:
+        form = ProductoForm(instance=p)
+    return render(request, "tienda/panel/producto_form.html", {"form": form, "titulo": f"Editar: {p.nombre}"})
+
+@staff_member_required
+def panel_producto_eliminar(request, pk):
+    p = get_object_or_404(Producto, pk=pk)
+    if request.method == "POST":
+        p.delete()
+        messages.info(request, "Producto eliminado.")
+        return redirect("tienda:panel_productos")
+    return render(request, "tienda/panel/confirm_delete.html", {"obj": p, "tipo": "producto"})
+
+@staff_member_required
+def panel_pedidos(request):
+    pedidos = Pedido.objects.select_related("usuario", "descuento").order_by("-creado")
+    return render(request, "tienda/panel/pedidos_list.html", {"pedidos": pedidos})
+
+@staff_member_required
+def panel_pedido_detalle(request, pk):
+    ped = get_object_or_404(Pedido.objects.prefetch_related("detalles__producto"), pk=pk)
+    if request.method == "POST":
+        form = PedidoEstadoForm(request.POST, instance=ped)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Pedido actualizado.")
+            return redirect("tienda:panel_pedido_detalle", pk=pk)
+    else:
+        form = PedidoEstadoForm(instance=ped)
+    return render(request, "tienda/panel/pedido_detalle.html", {"pedido": ped, "form": form})

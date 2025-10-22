@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Productos · Panel{% endblock %}
+{% block content %}
+<section class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;">
+    <h1 class="h1">Productos</h1>
+    <a class="btn btn-accent btn-pill" href="{% url 'tienda:panel_producto_nuevo' %}">+ Nuevo</a>
+  </div>
+  <form method="get" style="margin:.5rem 0; display:flex; gap:.5rem;">
+    <input class="qty" name="q" value="{{ q }}" placeholder="Buscar…">
+    <button class="btn btn-outline">Buscar</button>
+  </form>
+
+  <div class="cart">
+    <div class="cart-head">
+      <div>Nombre</div><div>Precio</div><div>Stock</div><div>Disp.</div><div></div>
+    </div>
+    {% for p in productos %}
+      <div class="cart-row">
+        <div class="prod-nombre">{{ p.nombre }}</div>
+        <div class="precio">${{ p.precio }}</div>
+        <div>{{ p.stock }}</div>
+        <div>{% if p.disponible %}<span class="pill pill-ok">Sí</span>{% else %}<span class="pill pill-agotado">No</span>{% endif %}</div>
+        <div style="display:flex; gap:.4rem; justify-content:flex-end;">
+          <a class="btn btn-outline" href="{% url 'tienda:panel_producto_editar' p.id %}">Editar</a>
+          <a class="btn btn-danger" href="{% url 'tienda:panel_producto_eliminar' p.id %}">Eliminar</a>
+        </div>
+      </div>
+    {% empty %}
+      <p>No hay productos.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
