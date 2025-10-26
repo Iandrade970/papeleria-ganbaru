@@ -37,6 +37,13 @@ class Producto(models.Model):
         max_digits=10, decimal_places=2,
         validators=[MinValueValidator(Decimal("0.00"))]
     )
+
+    resumen = models.CharField(
+        "resumen corto (para la tarjeta)",
+        max_length=160,
+        blank=True,
+        help_text="Texto breve que se mostrará en el catálogo (máx. 160 caracteres)."
+    )
     disponible = models.BooleanField(default=True)
     stock = models.PositiveIntegerField(default=0)
     creado = models.DateTimeField(auto_now_add=True)

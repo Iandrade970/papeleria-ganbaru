@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .views import producto_detalle
 
 app_name = 'tienda'
 
@@ -34,4 +35,8 @@ urlpatterns = [
     # Pedidos
     path('panel/pedidos/', views.panel_pedidos, name='panel_pedidos'),
     path('panel/pedidos/<int:pk>/', views.panel_pedido_detalle, name='panel_pedido_detalle'),
+
+    # Ficha de producto
+    path('producto/<int:pk>/', producto_detalle, name='producto_detalle'),
+
 ]

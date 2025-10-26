@@ -14,7 +14,7 @@ class ProductoAdmin(admin.ModelAdmin):
     list_display = ("thumb", "nombre", "precio", "stock", "disponible", "categoria", "creado")
     list_filter = ("disponible", "categoria")
     search_fields = ("nombre", "descripcion")
-    fields = ("nombre", "descripcion", "precio", "stock", "disponible", "categoria", "imagen")
+    fields = ("nombre", "descripcion", "resumen", "precio", "stock", "disponible", "categoria", "imagen")
 
     def thumb(self, obj):
         if getattr(obj, "imagen", None):

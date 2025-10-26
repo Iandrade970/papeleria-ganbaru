@@ -400,3 +400,31 @@ body.bg{background:linear-gradient(180deg,var(--bg1),var(--bg2));}
   transform: scale(1.05);
 }
 
+.clickable-card {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.clickable-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(255, 0, 100, 0.15);
+}
+
+/* Limita visualmente a 2 líneas con “…” manteniendo alto uniforme */
+.product-desc {
+  color: #7b5b66;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  margin: 0.5rem 0 1rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;       /* máximo 2 líneas visibles */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 2.8em;           /* mantiene altura pareja */
+  transition: color 0.2s ease;
+}
+
+.product-desc:hover {
+  color: #444;                 /* cambia suavemente al pasar el mouse */
+}

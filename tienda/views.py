@@ -264,3 +264,24 @@ def panel_pedido_detalle(request, pk):
     else:
         form = PedidoEstadoForm(instance=ped)
     return render(request, "tienda/panel/pedido_detalle.html", {"pedido": ped, "form": form})
+
+
+def producto_detalle(request, pk):
+    p = get_object_or_404(Producto, pk=pk, disponible=True)
+    return render(request, "tienda/producto_detalle.html", {"p": p})
+
+def carrito_agregar(request, producto_id):
+    producto = get_object_or_404(Producto, id=producto_id, disponible=True)
+    qty = int(request.POST.get("qty", 1)) if request.method == "POST" else 1
+
+    Cart(request).add(producto.id, qty)
+    messages.success(request, f"Agregado: {producto.nombre}")
+
+    next_url = request.POST.get("next") or request.GET.get("next")
+    if not next_url:
+        next_url = request.META.get("HTTP_REFERER")
+
+    if not next_url:
+        next_url = reverse("tienda:carrito_ver")
+
+    return redirect(next_url)

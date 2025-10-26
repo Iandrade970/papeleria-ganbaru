@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ p.nombre }} · Papelería Ganbaru{% endblock %}
+
+{% block content %}
+<section class="wrap">
+  <article class="card pop" style="display:grid;grid-template-columns:320px 1fr;gap:24px;">
+    <div>
+      {% if p.imagen %}
+        <img src="{{ p.imagen.url }}" alt="{{ p.nombre }}" style="width:100%;border-radius:16px;object-fit:cover;aspect-ratio:1/1;">
+      {% else %}
+        <div class="card" style="height:320px;display:grid;place-items:center;border-radius:16px;">Sin imagen</div>
+      {% endif %}
+    </div>
+
+    <div>
+      <h1 class="h1" style="margin-top:0">{{ p.nombre }}</h1>
+      {% if p.categoria %}
+        <div class="pill" style="margin:.25rem 0 1rem">{{ p.categoria.nombre }}</div>
+      {% endif %}
+
+      <p class="lead">{{ p.descripcion|default:"—" }}</p>
+
+      <div style="display:flex;align-items:center;gap:14px;margin:14px 0;">
+        <div class="price" style="font-size:1.6rem;font-weight:900;">$ {{ p.precio }}</div>
+        {% if p.disponible %}
+          <span class="pill pill-ok">Disponible</span>
+        {% else %}
+          <span class="pill pill-agotado">Agotado</span>
+        {% endif %}
+      </div>
+
+      {% if p.disponible %}
+      <form action="{% url 'tienda:carrito_agregar' p.id %}" method="post" style="display:flex;gap:.6rem;align-items:center">
+        {% csrf_token %}
+        <input type="number" name="qty" min="1" value="1" class="qty-input" style="width:90px;">
+        <!-- Volver a esta misma ficha tras agregar -->
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button class="btn btn-accent btn-pill" type="submit">Agregar</button>
+      </form>
+      {% endif %}
+
+      <div style="margin-top:18px;">
+        <a class="btn btn-outline btn-pill" href="{% url 'tienda:inicio' %}">← Volver al catálogo</a>
+      </div>
+    </div>
+  </article>
+</section>
+{% endblock %}
