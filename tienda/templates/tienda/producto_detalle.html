@@ -21,7 +21,7 @@
       <p class="lead">{{ p.descripcion|default:"—" }}</p>
 
       <div style="display:flex;align-items:center;gap:14px;margin:14px 0;">
-        <div class="price" style="font-size:1.6rem;font-weight:900;">$ {{ p.precio }}</div>
+        <div class="price" style="font-size:1.6rem;font-weight:900;">{{ p.precio_formateado }}</div>
         {% if p.disponible %}
           <span class="pill pill-ok">Disponible</span>
         {% else %}

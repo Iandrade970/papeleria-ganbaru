@@ -103,11 +103,13 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # Si definiste Cloudinary en variables, úsalo. Si no, usa media local (para tu PC).
 if os.getenv("CLOUDINARY_CLOUD_NAME"):
     DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+
     CLOUDINARY_STORAGE = {
         "CLOUD_NAME": os.getenv("CLOUDINARY_CLOUD_NAME"),
         "API_KEY": os.getenv("CLOUDINARY_API_KEY"),
         "API_SECRET": os.getenv("CLOUDINARY_API_SECRET"),
     }
+
     MEDIA_URL = "/media/"
 else:
     MEDIA_URL = "/media/"
@@ -116,7 +118,7 @@ else:
 # ====== Seguridad detrás de proxy (Render) ======
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-# ====== Auth ======
+# ====== Auth ======    
 LOGIN_URL = "/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"

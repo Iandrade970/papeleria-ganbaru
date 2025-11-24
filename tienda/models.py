@@ -6,6 +6,8 @@ from django.db import models
 from django.db.models import Q, F, Sum, DecimalField
 from django.utils import timezone
 from django.utils.text import slugify
+from django.contrib.humanize.templatetags.humanize import intcomma
+
 
 
 # ----------------- CATEGORÍA -----------------
@@ -37,6 +39,15 @@ class Producto(models.Model):
         max_digits=10, decimal_places=2,
         validators=[MinValueValidator(Decimal("0.00"))]
     )
+
+    def precio_formateado(self):
+        """Devuelve el precio sin decimales y con separador de miles (p. ej. $ 12.000)."""
+        try:
+            return f"$ {intcomma(int(self.precio))}"
+        except Exception:
+            return f"$ {self.precio}"
+
+    
 
     resumen = models.CharField(
         "resumen corto (para la tarjeta)",
@@ -106,6 +117,12 @@ class Pedido(models.Model):
     total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     creado = models.DateTimeField(default=timezone.now)
 
+    def total_formateado(self):
+        try:
+            return f"$ {intcomma(int(self.total))}"
+        except Exception:
+            return f"$ {self.total}"
+
     class Meta:
         ordering = ["-creado"]
         indexes = [models.Index(fields=["estado", "creado"])]
@@ -132,6 +149,18 @@ class DetallePedido(models.Model):
         max_digits=10, decimal_places=2,
         validators=[MinValueValidator(Decimal("0.00"))]
     )
+
+    def precio_unitario_formateado(self):
+        try:
+            return f"$ {intcomma(int(self.precio_unitario))}"
+        except Exception:
+            return f"$ {self.precio_unitario}"
+
+    def subtotal_formateado(self):
+        try:
+            return f"$ {intcomma(int(self.subtotal))}"
+        except Exception:
+            return f"$ {self.subtotal}"
 
     class Meta:
         ordering = ["id"]

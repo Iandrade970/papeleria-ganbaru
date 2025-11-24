@@ -103,7 +103,7 @@
         </p>
 
         <div class="product-buy" onclick="event.stopPropagation()">
-          <span class="price">$ {{ p.precio }}</span>
+          <span class="price">{{ p.precio_formateado }}</span>
           <form action="{% url 'tienda:carrito_agregar' p.id %}" method="post" class="add-form">
             {% csrf_token %}
             <input type="number" name="qty" value="1" min="1" class="qty">
