@@ -9,6 +9,7 @@ from django.contrib.auth.views import LoginView
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db import transaction
 from django.db.models import Q
+from django.db.models.deletion import ProtectedError
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 
@@ -207,11 +208,8 @@ def panel_home(request):
 
 @staff_member_required
 def panel_productos(request):
-    q = request.GET.get("q", "").strip()
-    productos = Producto.objects.all().order_by("-creado")
-    if q:
-        productos = productos.filter(nombre__icontains=q)
-    return render(request, "tienda/panel/productos_list.html", {"productos": productos, "q": q})
+    productos = Producto.objects.all().order_by("nombre")
+    return render(request, "tienda/panel/productos_list.html", {"productos": productos})
 
 @staff_member_required
 def panel_producto_nuevo(request):
@@ -240,17 +238,46 @@ def panel_producto_editar(request, pk):
 
 @staff_member_required
 def panel_producto_eliminar(request, pk):
-    p = get_object_or_404(Producto, pk=pk)
+    producto = get_object_or_404(Producto, pk=pk)
+
     if request.method == "POST":
-        p.delete()
-        messages.info(request, "Producto eliminado.")
+        try:
+            producto.delete()
+            messages.success(request, "Producto eliminado correctamente.")
+        except ProtectedError:
+            messages.error(
+                request,
+                "No puedes eliminar este producto porque ya tiene pedidos asociados. "
+                "Desactívalo si deseas que no se siga vendiendo."
+            )
         return redirect("tienda:panel_productos")
-    return render(request, "tienda/panel/confirm_delete.html", {"obj": p, "tipo": "producto"})
+
+    # Página de confirmación (opcional)
+    return render(request, "tienda/panel/producto_eliminar.html", {"producto": producto})
 
 @staff_member_required
 def panel_pedidos(request):
     pedidos = Pedido.objects.select_related("usuario", "descuento").order_by("-creado")
     return render(request, "tienda/panel/pedidos_list.html", {"pedidos": pedidos})
+
+@staff_member_required
+def panel_producto_desactivar(request, pk):
+    """
+    Desactiva el producto (disponible=False) para que no aparezca en el catálogo.
+    """
+    p = get_object_or_404(Producto, pk=pk)
+
+    if request.method == "POST":
+        p.disponible = False
+        p.save()
+        messages.success(
+            request,
+            f"El producto «{p.nombre}» fue desactivado. Ya no aparecerá en el catálogo."
+        )
+        return redirect("tienda:panel_productos")
+
+    # si quieres confirmación, puedes usar el mismo template de eliminar:
+    return render(request, "tienda/panel/producto_desactivar.html", {"producto": p})
 
 @staff_member_required
 def panel_pedido_detalle(request, pk):

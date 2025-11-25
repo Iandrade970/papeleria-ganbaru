@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Desactivar producto{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h1 class="h1">Desactivar producto</h1>
+
+  <p class="lead">
+    Al desactivar este producto, dejará de aparecer en el catálogo y no se podrá seguir comprando,
+    pero se mantendrá en los pedidos ya realizados.
+  </p>
+
+  <div class="cart">
+    <div class="cart-head">
+      <div>Producto</div>
+      <div>Precio</div>
+      <div>Stock</div>
+      <div>Estado actual</div>
+    </div>
+
+    <div class="cart-row">
+      <div class="prod-nombre">
+        {{ producto.nombre }}
+      </div>
+      <div>
+        {{ producto.precio_formateado }}
+      </div>
+      <div>
+        {{ producto.stock }}
+      </div>
+      <div>
+        {% if producto.disponible %}
+          Disponible
+        {% else %}
+          No disponible
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 1.5rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+    <form method="post" action="{% url 'tienda:panel_producto_desactivar' producto.id %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-primary btn-pill">
+        Sí, desactivar
+      </button>
+    </form>
+
+    <a href="{% url 'tienda:panel_productos' %}" class="btn btn-outline btn-pill">
+      Cancelar
+    </a>
+  </div>
+</section>
+{% endblock %}

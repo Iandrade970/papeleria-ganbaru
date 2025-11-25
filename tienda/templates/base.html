@@ -41,14 +41,98 @@
   </header>
 
   {% if messages %}
-  <div class="wrap">
-    <ul class="flash">
-      {% for message in messages %}
-        <li class="flash-item">{{ message }}</li>
-      {% endfor %}
-    </ul>
-  </div>
-  {% endif %}
+<div class="messages-container">
+  {% for message in messages %}
+    <div class="msg msg-{{ message.tags }}">
+      <span class="msg-icon">
+        {% if message.tags == "success" %}✔️{% endif %}
+        {% if message.tags == "error" %}❌{% endif %}
+        {% if message.tags == "warning" %}⚠️{% endif %}
+        {% if message.tags == "info" %}ℹ️{% endif %}
+      </span>
+
+      <span class="msg-text">{{ message }}</span>
+
+      <button class="msg-close" onclick="this.parentElement.remove()">✖</button>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<style>
+/* Contenedor general */
+.messages-container {
+  margin: 1.5rem auto;
+  max-width: 900px;
+}
+
+/* Caja base */
+.msg {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.3rem;
+  border-radius: 14px;
+  margin-bottom: 0.8rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  animation: fadeIn 0.35s ease-out;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.1);
+}
+
+/* Icono */
+.msg-icon {
+  margin-right: 0.6rem;
+  font-size: 1.2rem;
+}
+
+/* Texto */
+.msg-text {
+  flex: 1;
+}
+
+/* Botón cerrar */
+.msg-close {
+  border: none;
+  background: transparent;
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-left: 1rem;
+  color: #6b3b4c;
+}
+
+/* Colores por tipo */
+.msg-success {
+  background: #eaffef;
+  border: 2px solid #6bd38c;
+  color: #2f7a47;
+}
+
+.msg-error {
+  background: #ffe5e8;
+  border: 2px solid #ff8a9a;
+  color: #a7323f;
+}
+
+.msg-warning {
+  background: #fff6d7;
+  border: 2px solid #ffd66b;
+  color: #967300;
+}
+
+.msg-info {
+  background: #e2f0ff;
+  border: 2px solid #7bb6ff;
+  color: #2b5f9c;
+}
+
+/* Animación */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
 
   <main class="wrap">
     {% block content %}{% endblock %}

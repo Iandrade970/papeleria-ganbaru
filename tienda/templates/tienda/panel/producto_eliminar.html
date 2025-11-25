@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Eliminar producto{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h1 class="h1">¿Eliminar producto?</h1>
+
+  <p class="lead">
+    Estás a punto de eliminar el siguiente producto del sistema:
+  </p>
+
+  <div class="cart">
+    <div class="cart-head">
+      <div>Producto</div>
+      <div>Precio</div>
+      <div>Stock</div>
+      <div>Estado</div>
+    </div>
+
+    <div class="cart-row">
+      <div class="prod-nombre">{{ producto.nombre }}</div>
+      <div>{{ producto.precio_formateado }}</div>
+      <div>{{ producto.stock }}</div>
+      <div>
+        {% if producto.disponible %}
+          Disponible
+        {% else %}
+          No disponible
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <p class="lead" style="margin-top: 1.2rem;">
+    Si este producto tiene pedidos asociados, <strong>no se podrá eliminar</strong>.
+    En ese caso, puedes usar la opción <strong>Desactivar</strong>.
+  </p>
+
+  <div style="margin-top: 1.5rem; display:flex; gap:0.6rem;">
+    <form method="post" action="{% url 'tienda:panel_producto_eliminar' producto.id %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-primary btn-pill">Sí, eliminar</button>
+    </form>
+
+    <form method="post" action="{% url 'tienda:panel_producto_desactivar' producto.id %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline btn-pill">Desactivar</button>
+    </form>
+
+    <a href="{% url 'tienda:panel_productos' %}" class="btn btn-outline btn-pill">Cancelar</a>
+  </div>
+</section>
+{% endblock %}

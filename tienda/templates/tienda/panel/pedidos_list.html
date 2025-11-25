@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Pedidos{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h1 class="h1">Pedidos</h1>
+  <p class="lead">
+    Aquí puedes ver todos los pedidos realizados en la tienda y acceder al detalle de cada uno.
+  </p>
+
+  {% if pedidos %}
+    <div class="cart">
+      <div class="cart-head">
+        <div>ID / Usuario</div>
+        <div>Estado</div>
+        <div>Total</div>
+        <div>Fecha</div>
+        <div>Acción</div>
+      </div>
+
+      {% for p in pedidos %}
+        <div class="cart-row">
+          <!-- ID y usuario -->
+          <div>
+            <strong>#{{ p.usuario.id }}</strong> · {{ p.usuario.username }}
+          </div>
+
+          <!-- Estado del pedido -->
+          <div>
+            {{ p.estado }}
+          </div>
+
+          <!-- Total formateado -->
+          <div>
+            {{ p.total_formateado }}
+          </div>
+
+          <!-- Fecha de creación -->
+          <div>
+            {{ p.creado|date:"d/m/Y H:i" }}
+          </div>
+
+          <!-- Botón Ver detalles -->
+          <div>
+            <a href="{% url 'tienda:panel_pedido_detalle' p.id %}"
+               class="btn btn-primary btn-pill">
+              Ver detalles
+            </a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="lead">
+      Todavía no hay pedidos registrados.
+    </p>
+  {% endif %}
+</section>
+{% endblock %}
