@@ -8,7 +8,7 @@
       {% for p in pedidos %}
         <article class="card order">
           <header class="order-head">
-            <h3>Pedido #{{ p.id }}</h3>
+            <h3>Pedido #{{ p.numero_usuario }}</h3>
             <span class="pill">{{ p.get_estado_display }}</span>
           </header>
           <ul class="order-lines">

@@ -112,6 +112,11 @@ class Pedido(models.Model):
     usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="pedidos"
     )
+        
+    numero_usuario = models.PositiveIntegerField(
+    default=0,
+    help_text="Número correlativo de pedido para este usuario")
+    
     descuento = models.ForeignKey(Descuento, null=True, blank=True, on_delete=models.SET_NULL)
     estado = models.CharField(max_length=10, choices=ESTADOS, default="PENDIENTE")
     total = models.DecimalField(max_digits=12, decimal_places=2, default=0)

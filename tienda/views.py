@@ -3,6 +3,7 @@ import secrets
 from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
+from django.http import Http404
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
@@ -12,6 +13,7 @@ from django.db.models import Q
 from django.db.models.deletion import ProtectedError
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from django.db.models import Max
 
 from .cart import Cart
 from .forms import RegistroForm, ProductoForm, PedidoEstadoForm
@@ -113,11 +115,31 @@ def carrito_ver(request):
     return render(request, "tienda/carrito.html", {"items": list(cart.items()), "total": cart.total()})
 
 def carrito_agregar(request, producto_id):
-    producto = get_object_or_404(Producto, id=producto_id, disponible=True)
+    try:
+        producto = Producto.objects.get(id=producto_id)
+    except Producto.DoesNotExist:
+        messages.error(request, "Este producto no existe.")
+        return redirect("tienda:inicio")
+
+    if not producto.disponible:
+        messages.error(request, "No se puede agregar al carrito: el producto no está disponible.")
+        # Redirigimos a donde estaba el usuario
+        next_url = request.POST.get("next") or request.GET.get("next") or request.META.get("HTTP_REFERER")
+        if not next_url:
+            next_url = reverse("tienda:inicio")
+        return redirect(next_url)
+
     qty = int(request.POST.get("qty", 1)) if request.method == "POST" else 1
+
     Cart(request).add(producto.id, qty)
     messages.success(request, f"Agregado: {producto.nombre}")
-    return redirect("tienda:carrito_ver")
+
+    next_url = request.POST.get("next") or request.GET.get("next") or request.META.get("HTTP_REFERER")
+    if not next_url:
+        next_url = reverse("tienda:carrito_ver")
+
+    return redirect(next_url)
+
 
 def carrito_set(request, producto_id):
     if request.method == "POST":
@@ -164,7 +186,14 @@ def checkout(request):
                 messages.error(request, f"No hay stock suficiente de '{p.nombre}'. Disponible: {p.stock}.")
                 return redirect("tienda:carrito_ver")
 
-        pedido = Pedido.objects.create(usuario=request.user, descuento=cupon, estado="PENDIENTE")
+        ultimo_num = (
+        Pedido.objects
+            .filter(usuario=request.user)
+            .aggregate(Max("numero_usuario"))["numero_usuario__max"]
+        or 0
+        )
+
+        pedido = Pedido.objects.create(usuario=request.user, descuento=cupon, estado="PENDIENTE",numero_usuario=ultimo_num + 1,)
 
         for it in items:
             p = productos_bloqueados[it["producto"].id]
@@ -294,21 +323,15 @@ def panel_pedido_detalle(request, pk):
 
 
 def producto_detalle(request, pk):
-    p = get_object_or_404(Producto, pk=pk, disponible=True)
+    try:
+        p = Producto.objects.get(pk=pk)
+    except Producto.DoesNotExist:
+        # Si de verdad no existe, 404 normal
+        raise Http404("Producto no encontrado")
+
+    if not p.disponible:
+        messages.error(request, "Este producto no está disponible por el momento.")
+        return redirect("tienda:inicio")
+
     return render(request, "tienda/producto_detalle.html", {"p": p})
 
-def carrito_agregar(request, producto_id):
-    producto = get_object_or_404(Producto, id=producto_id, disponible=True)
-    qty = int(request.POST.get("qty", 1)) if request.method == "POST" else 1
-
-    Cart(request).add(producto.id, qty)
-    messages.success(request, f"Agregado: {producto.nombre}")
-
-    next_url = request.POST.get("next") or request.GET.get("next")
-    if not next_url:
-        next_url = request.META.get("HTTP_REFERER")
-
-    if not next_url:
-        next_url = reverse("tienda:carrito_ver")
-
-    return redirect(next_url)

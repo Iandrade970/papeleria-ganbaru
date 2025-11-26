@@ -1,10 +1,18 @@
 {% extends "base.html" %}
-{% block title %}Pedido #{{ pedido.id }} · Papelería Ganbaru{% endblock %}
+{% block title %}Pedido #{{ pedido.numero_usuario }} · Papelería Ganbaru{% endblock %}
+
 {% block content %}
   <section class="success card">
     <h1 class="h1">¡Gracias!</h1>
-    <p>Tu pedido <strong>#{{ pedido.id }}</strong> quedó <strong>{{ pedido.get_estado_display }}</strong>.</p>
+
+    <p>
+      Tu pedido <strong>#{{ pedido.numero_usuario }}</strong>
+      quedó <strong>{{ pedido.get_estado_display }}</strong>.
+    </p>
+
     <p>Total: <strong>$ {{ pedido.total }}</strong></p>
+    {# si tienes pedido.total_formateado puedes usarlo: {{ pedido.total_formateado }} #}
+
     <p>
       <a class="btn btn-primary" href="{% url 'tienda:inicio' %}">Volver a comprar</a>
       <a class="btn btn-outline" href="{% url 'tienda:perfil' %}">Ver mis pedidos</a>
