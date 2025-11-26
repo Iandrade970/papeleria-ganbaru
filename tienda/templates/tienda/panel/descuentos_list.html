@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Cupones de descuento{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h1 class="h1">Cupones de descuento</h1>
+  <p class="lead">
+    Crea, edita y activa/desactiva los códigos de descuento de la tienda.
+  </p>
+
+  <p style="margin-bottom:1rem;">
+    <a href="{% url 'tienda:panel_descuento_nuevo' %}" class="btn btn-primary btn-pill">
+      + Nuevo cupón
+    </a>
+  </p>
+
+  {% if descuentos %}
+    <div class="cart">
+      <div class="cart-head">
+        <div>Código</div>
+        <div>Porcentaje</div>
+        <div>Estado</div>
+        <div>Creado</div>
+        <div>Acciones</div>
+      </div>
+
+      {% for d in descuentos %}
+        <div class="cart-row">
+          <div class="prod-nombre">{{ d.codigo }}</div>
+          <div>-{{ d.porcentaje }}%</div>
+          <div>
+            {% if d.activo %}
+              Activo
+            {% else %}
+              Inactivo
+            {% endif %}
+          </div>
+          <div>{{ d.creado|date:"d/m/Y H:i" }}</div>
+          <div>
+            <a href="{% url 'tienda:panel_descuento_editar' d.id %}" class="btn btn-outline btn-pill">
+              Editar
+            </a>
+
+            <form method="post"
+                  action="{% url 'tienda:panel_descuento_toggle' d.id %}"
+                  style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-secondary btn-pill">
+                {% if d.activo %}Desactivar{% else %}Activar{% endif %}
+              </button>
+            </form>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="lead">No hay cupones registrados.</p>
+  {% endif %}
+</section>
+{% endblock %}

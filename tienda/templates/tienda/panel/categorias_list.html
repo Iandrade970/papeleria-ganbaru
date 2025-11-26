@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Categorías{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h1 class="h1">Categorías</h1>
+  <p class="lead">
+    Administra las categorías de productos que se muestran en el catálogo.
+  </p>
+
+  <p style="margin-bottom:1rem;">
+    <a href="{% url 'tienda:panel_categoria_nueva' %}" class="btn btn-primary btn-pill">
+      + Nueva categoría
+    </a>
+  </p>
+
+  {% if categorias %}
+    <div class="cart">
+      <div class="cart-head">
+        <div>Nombre</div>
+        <div>Imagen</div>
+        <div>Acciones</div>
+      </div>
+
+      {% for cat in categorias %}
+        <div class="cart-row">
+          <div class="prod-nombre">{{ cat.nombre }}</div>
+          <div>
+            {% if cat.imagen %}
+              <img src="{{ cat.imagen.url }}" alt="{{ cat.nombre }}" style="height:40px;border-radius:6px;">
+            {% else %}
+              <span class="fine">Sin imagen</span>
+            {% endif %}
+          </div>
+          <div>
+            <a href="{% url 'tienda:panel_categoria_editar' cat.id %}" class="btn btn-outline btn-pill">
+              Editar
+            </a>
+            <form action="{% url 'tienda:panel_categoria_eliminar' cat.id %}"
+                  method="post"
+                  style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary btn-pill">
+                Eliminar
+              </button>
+            </form>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="lead">No hay categorías registradas.</p>
+  {% endif %}
+</section>
+{% endblock %}

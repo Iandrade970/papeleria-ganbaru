@@ -6,7 +6,118 @@
   <title>{% block title %}Papelería Ganbaru{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="{% static 'tienda/css/styles.css' %}" rel="stylesheet">
+
+  <style>
+    .messages-container {
+      position: relative;
+      max-width: 960px;
+      margin: 1.5rem auto 0;
+      z-index: 20;
+    }
+
+    .msg {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.9rem 1.2rem;
+      margin-bottom: 0.7rem;
+      border-radius: 18px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(255, 135, 170, 0.25);
+      backdrop-filter: blur(10px);
+      background: linear-gradient(135deg, rgba(255, 239, 245, 0.95), rgba(255, 215, 234, 0.9));
+      border: 1px solid rgba(255, 166, 201, 0.7);
+      color: #6f3045;
+      animation: msgFadeIn 0.35s ease-out;
+    }
+
+    .msg-left {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      flex: 1;
+    }
+
+    .msg-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+    }
+
+    .msg-close {
+      border: none;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 999px;
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      cursor: pointer;
+      color: #a0465f;
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+
+    .msg-close:hover {
+      background: rgba(255, 255, 255, 0.9);
+      transform: translateY(-1px);
+    }
+
+    /* Variantes por tipo, todas en la gama rosada / pastel */
+    .msg-success {
+      background: linear-gradient(135deg, #f0fff5, #e0ffe9);
+      border-color: #86d9a4;
+      color: #2f7245;
+      box-shadow: 0 10px 25px rgba(134, 217, 164, 0.3);
+    }
+
+    .msg-error {
+      background: linear-gradient(135deg, #ffe5ec, #ffd0dd);
+      border-color: #ff8aa5;
+      color: #8d2137;
+      box-shadow: 0 10px 25px rgba(255, 138, 165, 0.35);
+    }
+
+    .msg-warning {
+      background: linear-gradient(135deg, #fff6e0, #ffe9b8);
+      border-color: #ffd374;
+      color: #8a6a1b;
+      box-shadow: 0 10px 25px rgba(255, 211, 116, 0.3);
+    }
+
+    .msg-info {
+      background: linear-gradient(135deg, #e7f3ff, #d8e9ff);
+      border-color: #7eb4ff;
+      color: #275383;
+      box-shadow: 0 10px 25px rgba(126, 180, 255, 0.3);
+    }
+
+    @keyframes msgFadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* En pantallas muy pequeñas, que ocupen casi todo el ancho */
+    @media (max-width: 640px) {
+      .messages-container {
+        margin-inline: 1rem;
+      }
+      .msg {
+        padding-inline: 0.9rem;
+      }
+    }
+  </style>
 </head>
+
 <body class="bg">
   <header class="site-header glass">
     <div class="wrap header-inner">
@@ -23,7 +134,6 @@
           <a href="{% url 'tienda:perfil' %}" class="btn btn-pill btn-outline">👤 Mi perfil</a>
 
           {% if user.is_staff %}
-            <!-- Botón visible solo para administradores -->
             <a class="btn btn-secondary btn-pill" href="{% url 'tienda:panel_home' %}">Panel</a>
             <a href="{% url 'admin:index' %}" class="btn btn-pill btn-ghost">Admin</a>
           {% endif %}
@@ -41,98 +151,24 @@
   </header>
 
   {% if messages %}
-<div class="messages-container">
-  {% for message in messages %}
-    <div class="msg msg-{{ message.tags }}">
-      <span class="msg-icon">
-        {% if message.tags == "success" %}✔️{% endif %}
-        {% if message.tags == "error" %}❌{% endif %}
-        {% if message.tags == "warning" %}⚠️{% endif %}
-        {% if message.tags == "info" %}ℹ️{% endif %}
-      </span>
+    <div class="messages-container">
+      {% for message in messages %}
+        <div class="msg msg-{{ message.tags|default:'info' }}">
+          <div class="msg-left">
+            <span class="msg-icon">
+              {% if message.tags == "success" %}✔️{% endif %}
+              {% if message.tags == "error" %}❌{% endif %}
+              {% if message.tags == "warning" %}⚠️{% endif %}
+              {% if message.tags == "info" or not message.tags %}🌸{% endif %}
+            </span>
+            <span class="msg-text">{{ message }}</span>
+          </div>
 
-      <span class="msg-text">{{ message }}</span>
-
-      <button class="msg-close" onclick="this.parentElement.remove()">✖</button>
+          <button class="msg-close" onclick="this.closest('.msg').remove()">✕</button>
+        </div>
+      {% endfor %}
     </div>
-  {% endfor %}
-</div>
-{% endif %}
-
-<style>
-/* Contenedor general */
-.messages-container {
-  margin: 1.5rem auto;
-  max-width: 900px;
-}
-
-/* Caja base */
-.msg {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.3rem;
-  border-radius: 14px;
-  margin-bottom: 0.8rem;
-  font-size: 0.95rem;
-  font-weight: 600;
-  animation: fadeIn 0.35s ease-out;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.1);
-}
-
-/* Icono */
-.msg-icon {
-  margin-right: 0.6rem;
-  font-size: 1.2rem;
-}
-
-/* Texto */
-.msg-text {
-  flex: 1;
-}
-
-/* Botón cerrar */
-.msg-close {
-  border: none;
-  background: transparent;
-  font-size: 1.1rem;
-  cursor: pointer;
-  margin-left: 1rem;
-  color: #6b3b4c;
-}
-
-/* Colores por tipo */
-.msg-success {
-  background: #eaffef;
-  border: 2px solid #6bd38c;
-  color: #2f7a47;
-}
-
-.msg-error {
-  background: #ffe5e8;
-  border: 2px solid #ff8a9a;
-  color: #a7323f;
-}
-
-.msg-warning {
-  background: #fff6d7;
-  border: 2px solid #ffd66b;
-  color: #967300;
-}
-
-.msg-info {
-  background: #e2f0ff;
-  border: 2px solid #7bb6ff;
-  color: #2b5f9c;
-}
-
-/* Animación */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-</style>
-
+  {% endif %}
 
   <main class="wrap">
     {% block content %}{% endblock %}

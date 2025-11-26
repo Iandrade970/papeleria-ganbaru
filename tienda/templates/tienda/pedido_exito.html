@@ -10,7 +10,7 @@
       quedó <strong>{{ pedido.get_estado_display }}</strong>.
     </p>
 
-    <p>Total: <strong>$ {{ pedido.total }}</strong></p>
+    <p>Total: <strong>{{ pedido.total_formateado }}</strong></p>
     {# si tienes pedido.total_formateado puedes usarlo: {{ pedido.total_formateado }} #}
 
     <p>

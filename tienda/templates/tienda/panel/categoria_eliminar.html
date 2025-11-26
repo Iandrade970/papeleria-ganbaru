@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Eliminar categoría{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h1 class="h1">¿Eliminar categoría?</h1>
+  <p class="lead">
+    Vas a eliminar la categoría <strong>{{ categoria.nombre }}</strong>.
+  </p>
+
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary btn-pill">Sí, eliminar</button>
+    <a href="{% url 'tienda:panel_categorias' %}" class="btn btn-outline btn-pill">Cancelar</a>
+  </form>
+</section>
+{% endblock %}

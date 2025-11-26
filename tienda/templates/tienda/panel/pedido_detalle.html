@@ -14,15 +14,16 @@
       <div class="cart-row">
         <div class="prod-nombre">{{ d.producto.nombre }}</div>
         <div>{{ d.cantidad }}</div>
-        <div>${{ d.precio_unitario }}</div>
-        <div>${{ d.subtotal }}</div>
+        <div>{{ d.precio_unitario_formateado }}</div>
+        <div>{{ d.subtotal_formateado }}</div>
         <div></div>
       </div>
     {% endfor %}
   </div>
 
   <div class="cart-total">
-    <span>Total:</span> <span class="total-monto">${{ pedido.total }}</span>
+    <span>Total:</span>
+    <span class="total-monto">{{ pedido.total_formateado }}</span>
   </div>
 
   <h3 class="section-title">Actualizar estado</h3>

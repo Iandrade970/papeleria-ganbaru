@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h1 class="h1">{{ titulo }}</h1>
+
+  <form method="post" enctype="multipart/form-data" class="product-grid">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary btn-pill">Guardar</button>
+    <a href="{% url 'tienda:panel_categorias' %}" class="btn btn-outline btn-pill">Volver</a>
+  </form>
+</section>
+{% endblock %}

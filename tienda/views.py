@@ -16,7 +16,7 @@ from django.urls import reverse
 from django.db.models import Max
 
 from .cart import Cart
-from .forms import RegistroForm, ProductoForm, PedidoEstadoForm
+from .forms import RegistroForm, ProductoForm, PedidoEstadoForm, CategoriaForm, DescuentoForm
 from .models import Producto, Categoria, Pedido, DetallePedido, Descuento
 
 
@@ -334,4 +334,112 @@ def producto_detalle(request, pk):
         return redirect("tienda:inicio")
 
     return render(request, "tienda/producto_detalle.html", {"p": p})
+
+# --------- PANEL CATEGORÍAS ---------
+@staff_member_required
+def panel_categorias(request):
+    categorias = Categoria.objects.all().order_by("nombre")
+    return render(request, "tienda/panel/categorias_list.html", {"categorias": categorias})
+
+
+@staff_member_required
+def panel_categoria_nueva(request):
+    if request.method == "POST":
+        form = CategoriaForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Categoría creada correctamente.")
+            return redirect("tienda:panel_categorias")
+    else:
+        form = CategoriaForm()
+    return render(
+        request,
+        "tienda/panel/categoria_form.html",
+        {"form": form, "titulo": "Nueva categoría"},
+    )
+
+
+@staff_member_required
+def panel_categoria_editar(request, pk):
+    categoria = get_object_or_404(Categoria, pk=pk)
+    if request.method == "POST":
+        form = CategoriaForm(request.POST, request.FILES, instance=categoria)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Categoría actualizada.")
+            return redirect("tienda:panel_categorias")
+    else:
+        form = CategoriaForm(instance=categoria)
+    return render(
+        request,
+        "tienda/panel/categoria_form.html",
+        {"form": form, "titulo": f"Editar: {categoria.nombre}"},
+    )
+
+
+@staff_member_required
+def panel_categoria_eliminar(request, pk):
+    categoria = get_object_or_404(Categoria, pk=pk)
+    if request.method == "POST":
+        categoria.delete()
+        messages.success(request, "Categoría eliminada.")
+        return redirect("tienda:panel_categorias")
+    return render(request, "tienda/panel/categoria_eliminar.html", {"categoria": categoria})
+
+# --------- PANEL DESCUENTOS / CUPONES ---------
+@staff_member_required
+def panel_descuentos(request):
+    descuentos = Descuento.objects.all().order_by("-creado")
+    return render(request, "tienda/panel/descuentos_list.html", {"descuentos": descuentos})
+
+
+@staff_member_required
+def panel_descuento_nuevo(request):
+    if request.method == "POST":
+        form = DescuentoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Cupón creado correctamente.")
+            return redirect("tienda:panel_descuentos")
+    else:
+        form = DescuentoForm()
+    return render(
+        request,
+        "tienda/panel/descuento_form.html",
+        {"form": form, "titulo": "Nuevo cupón de descuento"},
+    )
+
+
+@staff_member_required
+def panel_descuento_editar(request, pk):
+    desc = get_object_or_404(Descuento, pk=pk)
+    if request.method == "POST":
+        form = DescuentoForm(request.POST, instance=desc)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Cupón actualizado.")
+            return redirect("tienda:panel_descuentos")
+    else:
+        form = DescuentoForm(instance=desc)
+    return render(
+        request,
+        "tienda/panel/descuento_form.html",
+        {"form": form, "titulo": f"Editar cupón: {desc.codigo}"},
+    )
+
+
+@staff_member_required
+def panel_descuento_toggle(request, pk):
+    """
+    Activa / desactiva un cupón (campo 'activo').
+    """
+    desc = get_object_or_404(Descuento, pk=pk)
+    if request.method == "POST":
+        desc.activo = not desc.activo
+        desc.save(update_fields=["activo"])
+        estado = "activado" if desc.activo else "desactivado"
+        messages.success(request, f"Cupón «{desc.codigo}» {estado}.")
+        return redirect("tienda:panel_descuentos")
+    # por si alguien entra por GET, lo mandamos a la lista:
+    return redirect("tienda:panel_descuentos")
 

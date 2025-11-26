@@ -40,4 +40,16 @@ urlpatterns = [
     # Ficha de producto
     path('producto/<int:pk>/', producto_detalle, name='producto_detalle'),
 
+    # PANEL CATEGORÍAS
+    path("panel/categorias/", views.panel_categorias, name="panel_categorias"),
+    path("panel/categorias/nueva/", views.panel_categoria_nueva, name="panel_categoria_nueva"),
+    path("panel/categorias/<int:pk>/editar/", views.panel_categoria_editar, name="panel_categoria_editar"),
+    path("panel/categorias/<int:pk>/eliminar/", views.panel_categoria_eliminar, name="panel_categoria_eliminar"),
+
+    # PANEL DESCUENTOS
+    path("panel/descuentos/", views.panel_descuentos, name="panel_descuentos"),
+    path("panel/descuentos/nuevo/", views.panel_descuento_nuevo, name="panel_descuento_nuevo"),
+    path("panel/descuentos/<int:pk>/editar/", views.panel_descuento_editar, name="panel_descuento_editar"),
+    path("panel/descuentos/<int:pk>/toggle/", views.panel_descuento_toggle, name="panel_descuento_toggle"),
+
 ]

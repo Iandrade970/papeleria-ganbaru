@@ -8,20 +8,23 @@
       {% for p in pedidos %}
         <article class="card order">
           <header class="order-head">
+            {# número por usuario #}
             <h3>Pedido #{{ p.numero_usuario }}</h3>
             <span class="pill">{{ p.get_estado_display }}</span>
           </header>
+
           <ul class="order-lines">
             {% for d in p.detalles.all %}
               <li>
                 <span>{{ d.cantidad }} × {{ d.producto.nombre }}</span>
-                <strong>$ {{ d.subtotal }}</strong>
+                <strong>{{ d.subtotal_formateado }}</strong>
               </li>
             {% endfor %}
           </ul>
+
           <footer class="order-foot">
             <span class="muted">{{ p.creado|date:"d/m/Y H:i" }}</span>
-            <strong>Total: $ {{ p.total }}</strong>
+            <strong>Total: {{ p.total_formateado }}</strong>
           </footer>
         </article>
       {% endfor %}
